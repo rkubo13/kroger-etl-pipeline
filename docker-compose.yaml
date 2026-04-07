@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  airflow:
+    build: .
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      PYTHONPATH: /opt/airflow
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./etl:/opt/airflow/etl
+      - ./config:/opt/airflow/config
+      - ./data:/opt/airflow/data
+      - ./scripts:/opt/airflow/scripts
+      - ./tests:/opt/airflow/tests
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username airflow --password airflow
+          --firstname Admin --lastname User --role Admin --email admin@example.com || true &&
+        python scripts/generate_data.py &&
+        airflow webserver & airflow scheduler
+      "
+
+  # Run pipeline directly without Airflow (for quick testing)
+  pipeline:
+    build: .
+    profiles: ["cli"]
+    environment:
+      PYTHONPATH: /opt/airflow
+    volumes:
+      - ./data:/opt/airflow/data
+      - ./config:/opt/airflow/config
+      - ./etl:/opt/airflow/etl
+      - ./scripts:/opt/airflow/scripts
+    command: >
+      bash -c "
+        python scripts/generate_data.py &&
+        python -m etl.pipeline
+      "
