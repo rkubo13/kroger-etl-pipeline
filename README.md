@@ -97,11 +97,3 @@ kroger-etl-pipeline/
 ```bash
 docker compose exec airflow pytest tests/ -v --tb=short
 ```
-
-## What This Demonstrates
-
-- **Production patterns**: retry logic, idempotent loads (upserts), config-driven design
-- **Data quality as code**: automated checks that halt the pipeline if data is bad
-- **Containerized reproducibility**: `docker compose up` runs the full stack
-- **Testability**: unit tests for every ETL stage with fixture data
-- **Business awareness**: transforms map to real retail analytics (basket analysis, promo lift, segmentation)
